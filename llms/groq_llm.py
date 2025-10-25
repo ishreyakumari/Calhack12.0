@@ -42,9 +42,14 @@ class GroqLLM:
             "temperature": temperature,
         }
 
-        resp = requests.post(self.api_url, json=payload, headers=headers, timeout=self.timeout)
-        resp.raise_for_status()
-        data = resp.json()
+        try:
+            resp = requests.post(self.api_url, json=payload, headers=headers, timeout=self.timeout)
+            resp.raise_for_status()
+            data = resp.json()
+        except Exception as e:
+            # Network or HTTP error — return a readable error string instead of raising
+            # so the agent can handle the failure gracefully.
+            return f"LLM_ERROR: {type(e).__name__}: {e}"
 
         # Try to be flexible about response shape
         if isinstance(data, dict):
